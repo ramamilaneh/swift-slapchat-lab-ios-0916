@@ -12,6 +12,7 @@ import CoreData
 class DataStore {
     
     static let sharedInstance = DataStore()
+    var messages = [Message]()
     
     private init() {}
     
@@ -44,6 +45,19 @@ class DataStore {
         return container
     }()
     
+    
+    func generateTestData() {
+        let newMessage1 = NSEntityDescription.insertNewObject(forEntityName: "Message", into: persistentContainer.viewContext) as! Message
+        newMessage1.content = "Good Morning"
+        newMessage1.createdAt = NSDate()
+        let newMessage2 = NSEntityDescription.insertNewObject(forEntityName: "Message", into: persistentContainer.viewContext) as! Message
+        newMessage2.content = "How are you?"
+        newMessage2.createdAt = NSDate()
+        let newMessage3 = NSEntityDescription.insertNewObject(forEntityName: "Message", into: persistentContainer.viewContext) as! Message
+        newMessage3.content = "Bye"
+        newMessage3.createdAt = NSDate()
+    }
+    
     // MARK: - Core Data Saving support
     
     func saveContext () {
@@ -57,6 +71,20 @@ class DataStore {
                 let nserror = error as NSError
                 fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
             }
+        }
+    }
+    
+    func fetchData() {
+        let managedContext = persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<Message>(entityName: "Message")
+        do {
+            let unsortedMessages = try managedContext.fetch(fetchRequest)
+           self.messages =  unsortedMessages.sorted(by: { (message1, message2) in
+                return message1.createdAt.timeIntervalSince1970 < message2.createdAt.timeIntervalSince1970
+            })
+            
+        }catch {
+            print("error")
         }
     }
     
